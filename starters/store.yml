@@ -1,0 +1,14 @@
+Description: CD12352 - Infrastructure as Code Project - Store - TrungNQ72
+
+Parameters:
+  # StaticContentBucket (#1)
+  # Ref: EnvironmentName (udagram-params.json)
+  # For Upload the project to S3: aws s3 cp s3://${EnvironmentName}-bucket-s3/index.html /var/www/html/index.html . To Lauuch Template
+  StaticContentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${EnvironmentName}-bucket-s3"
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+Resources:

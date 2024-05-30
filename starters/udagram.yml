@@ -2,7 +2,7 @@ Description: CD12352 - Infrastructure as Code Project - udagram - TrungNQ72
 
 Parameters:
   EnvironmentName:
-    Description: TrungNQ72-Udagram-Project02
+    Description: TrungNQ72-Project02
     Type: String
 
 Resources:
@@ -14,14 +14,13 @@ Resources:
     Properties:
       GroupDescription: Allow http access to our load balancer
       VpcId:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-VPCID"
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
       # Inbound rules
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 
   # WebServerSecurityGroup: #2
   # Ref: VpcId (from ImportValue)
@@ -32,56 +31,19 @@ Resources:
     Properties:
       GroupDescription: Allow http access to our hosts from the LB Security Group
       VpcId:
-        Fn::ImportValue:
-          !Sub "${EnvironmentName}-VPCID"
+        Fn::ImportValue: !Sub "${EnvironmentName}-VPCID"
       # inbound rules
       SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 80
-        ToPort: 80
-        SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
       # outbound rules
       SecurityGroupEgress:
-      - IpProtocol: tcp
-        FromPort: 0
-        ToPort: 65535
-        CidrIp: 0.0.0.0/0
-
-  # WebAppInstanceRole: #3.1
-  # IAM for accessing the bucket S3 from EC2
-  # Policies: s3:GetObject, s3:ListBucket
-  WebAppInstanceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub "${EnvironmentName}-web-servers"
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: 'Allow'
-          Principal:
-            Service:
-            - 'ec2.amazonaws.com'
-          Action:
-          - 'sts:AssumeRole'
-      Policies:
-        - PolicyName: s3
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-            - Effect: Allow
-              Action:
-              - 's3:GetObject'
-              Resource:
-                - !Sub "arn:aws:s3:::${EnvironmentName}-bucket-s3/*"
-
-  # WebAppInstanceProfile: #3.2
-  # Ref WebAppInstanceRole (#3.1)
-  WebAppInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: '/'
-      Roles:
-      - !Ref WebAppInstanceRole
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
 
   # WebAppLaunchTemplate: #4
   # using nginx
@@ -92,7 +54,7 @@ Resources:
   # Ref WebAppInstanceProfile (#3.2)
   WebAppLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
-    Properties: 
+    Properties:
       LaunchTemplateName: !Sub "${EnvironmentName}-web-servers"
       LaunchTemplateData:
         UserData:
@@ -100,18 +62,20 @@ Resources:
             #!/bin/bash
             sudo apt-get update -y
             sudo apt-get install nginx -y
-            aws s3 cp s3://${EnvironmentName}-bucket-s3/index.html /var/www/html/index.html
+            aws s3 cp s3://trungnq72-project02-bucket-s3/index.html /var/www/html/index.html
             sudo service nginx start
         ImageId: ami-0e001c9271cf7f3b9
         SecurityGroupIds:
           - !Ref WebServerSecurityGroup
         InstanceType: t2.micro
         BlockDeviceMappings:
-        - DeviceName: "/dev/sdk"
-          Ebs:
-            VolumeSize: '10'
+          - DeviceName: "/dev/sdk"
+            Ebs:
+              VolumeSize: "10"
         IamInstanceProfile:
-          Name: !Ref WebAppInstanceProfile
+          Name:
+            Fn::ImportValue:
+              Fn::Sub: "${EnvironmentName}-WebAppInstanceProfile"
 
   # WebAppTargetGroup: #5
   # Ref: VpcId (from ImportValue)
@@ -126,7 +90,7 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 5
-      VpcId: 
+      VpcId:
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
 
@@ -137,16 +101,15 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       VPCZoneIdentifier:
-      - Fn::ImportValue: 
-          !Sub "${EnvironmentName}-PRIVATE-SUBNETS"
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PRIVATE-SUBNETS"
       LaunchTemplate:
         LaunchTemplateId: !Ref WebAppLaunchTemplate
         Version: !GetAtt WebAppLaunchTemplate.LatestVersionNumber
-      MinSize: '2'
-      DesiredCapacity: '4'
-      MaxSize: '4'
+      MinSize: "2"
+      DesiredCapacity: "4"
+      MaxSize: "4"
       TargetGroupARNs:
-      - Ref: WebAppTargetGroup
+        - Ref: WebAppTargetGroup
 
   # WebAppLoadBalancer: #7
   # Ref: LoadBalancerSecurityGroup (#1)
@@ -156,25 +119,25 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Subnets:
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-1"
-      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-2"
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-1"
+        - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-2"
       SecurityGroups:
-      - Ref: LoadBalancerSecurityGroup
+        - Ref: LoadBalancerSecurityGroup
 
   # Listener: #8
-  # Tells the LB to forward incoming requests to a specified target group. 
+  # Tells the LB to forward incoming requests to a specified target group.
   # Ref: WebAppTargetGroup (#5)
   # Ref: WebAppLoadBalancer(#7)
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-      - Type: forward
-        TargetGroupArn:
-          Ref: WebAppTargetGroup
+        - Type: forward
+          TargetGroupArn:
+            Ref: WebAppTargetGroup
       LoadBalancerArn:
         Ref: WebAppLoadBalancer
-      Port: '80'
+      Port: "80"
       Protocol: HTTP
 
   # ApplicationLoadBalancerListenerRule: #9
@@ -184,12 +147,10 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       Actions:
-      - Type: forward
-        TargetGroupArn: !Ref 'WebAppTargetGroup'
+        - Type: forward
+          TargetGroupArn: !Ref "WebAppTargetGroup"
       Conditions:
-      - Field: path-pattern
-        Values: [/]
-      ListenerArn: !Ref 'Listener'
+        - Field: path-pattern
+          Values: [/]
+      ListenerArn: !Ref "Listener"
       Priority: 1
-
-Outputs:

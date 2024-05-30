@@ -1,7 +1,7 @@
 [
 	{
         "ParameterKey": "EnvironmentName",
-        "ParameterValue": "TrungNQ72-Network-Project02"
+        "ParameterValue": "TrungNQ72-Project02"
     },
     {
         "ParameterKey": "VpcCIDR",

@@ -3,7 +3,7 @@ Description: CD12352 - Infrastructure as Code Project - Network - TrungNQ72
 Parameters:
   # EnvironmentName: TrungNQ72
   EnvironmentName:
-    Description: TrungNQ72-Network-Project02
+    Description: TrungNQ72-Project02
     Type: String
 
   # VpcCIDR

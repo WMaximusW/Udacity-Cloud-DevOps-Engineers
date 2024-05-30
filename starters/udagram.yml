@@ -1,0 +1,195 @@
+Description: CD12352 - Infrastructure as Code Project - udagram - TrungNQ72
+
+Parameters:
+  EnvironmentName:
+    Description: TrungNQ72-Udagram-Project02
+    Type: String
+
+Resources:
+  # LoadBalancerSecurityGroup: #1
+  # Ref: VpcId (from ImportValue)
+  # Inbound rules: allow port 80 from the internet, any addresses, http only
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http access to our load balancer
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+      # Inbound rules
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+
+  # WebServerSecurityGroup: #2
+  # Ref: VpcId (from ImportValue)
+  # Ref: LoadBalancerSecurityGroup (#1)
+  # Inbound rule, allow 80 and the ip address range from LoadBalancerSecurityGroup
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http access to our hosts from the LB Security Group
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+      # inbound rules
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+      # outbound rules
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+
+  # WebAppInstanceRole: #3.1
+  # IAM for accessing the bucket S3 from EC2
+  # Policies: s3:GetObject, s3:ListBucket
+  WebAppInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${EnvironmentName}-web-servers"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: 'Allow'
+          Principal:
+            Service:
+            - 'ec2.amazonaws.com'
+          Action:
+          - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+            - Effect: Allow
+              Action:
+              - 's3:GetObject'
+              - 's3:ListBucket'
+              Resource:
+                - !Sub "arn:aws:s3:::${EnvironmentName}-bucket-s3/*"
+
+  # WebAppInstanceProfile: #3.2
+  # Ref WebAppInstanceRole (#3.1)
+  WebAppInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: '/'
+      Roles:
+      - !Ref WebAppInstanceRole
+
+  # WebAppLaunchTemplate: #4
+  # using nginx
+  # OS: ubuntu 22 (using ami-0e001c9271cf7f3b9)
+  # Instances: t2.micro (free tier)
+  # Ebs: using only 8GiB, gp2
+  # Ref WebServerSecurityGroup (#2)
+  # Ref WebAppInstanceProfile (#3.2)
+  WebAppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateName: !Sub "${EnvironmentName}-web-servers"
+      LaunchTemplateData:
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo apt-get update -y
+            sudo apt-get install nginx -y
+            sudo service nginx start
+        ImageId: ami-0e001c9271cf7f3b9
+        SecurityGroupIds:
+          - !Ref WebServerSecurityGroup
+        InstanceType: t2.micro
+        BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: '8'
+        IamInstanceProfile:
+          Name: !Ref WebAppInstanceProfile
+
+  # WebAppTargetGroup: #5
+  # Ref: VpcId (from ImportValue)
+  WebAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: 
+        Fn::ImportValue:
+          Fn::Sub: "${EnvironmentName}-VPCID"
+
+  # WebAppAutoScalingGroup: #6
+  # Ref: WebAppLaunchTemplate (#4)
+  # Ref: WebAppTargetGroup (#5)
+  WebAppAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+      - Fn::ImportValue: 
+          !Sub "${EnvironmentName}-PRIVATE-SUBNETS"
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebAppLaunchTemplate
+        Version: !GetAtt WebAppLaunchTemplate.LatestVersionNumber
+      MinSize: '2'
+      DesiredCapacity: '4'
+      MaxSize: '4'
+      TargetGroupARNs:
+      - Ref: WebAppTargetGroup
+
+  # WebAppLoadBalancer: #7
+  # Ref: LoadBalancerSecurityGroup (#1)
+  # Ref: public subnet 1 (from ImportValue)
+  # Ref: public subnet 2 (from ImportValue)
+  WebAppLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-1"
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC-SUBNET-2"
+      SecurityGroups:
+      - Ref: LoadBalancerSecurityGroup
+
+  # Listener: #8
+  # Tells the LB to forward incoming requests to a specified target group. 
+  # Ref: WebAppTargetGroup (#5)
+  # Ref: WebAppLoadBalancer(#7)
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: WebAppTargetGroup
+      LoadBalancerArn:
+        Ref: WebAppLoadBalancer
+      Port: '80'
+      Protocol: HTTP
+
+  # ApplicationLoadBalancerListenerRule: #9
+  # Ref: WebAppTargetGroup (#5)
+  # Ref: Listener (#8)
+  ApplicationLoadBalancerListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref 'WebAppTargetGroup'
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref 'Listener'
+      Priority: 1
+
+Outputs:

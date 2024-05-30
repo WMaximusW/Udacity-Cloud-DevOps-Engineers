@@ -4,10 +4,16 @@ For projects
 # cd to folder tools
 
 # Create Stack
-./create.sh trungnq72 ../starters/network.yml ../starters/network-params.json
+# Network
+./create.sh trungnq72-network ../starters/network.yml ../starters/network-params.json
+./create.sh trungnq72-services ../starters/udagram.yml ../starters/udagram-params.json
 
 # Update Stack
-./update.sh trungnq72 ../starters/network.yml ../starters/network-params.json
+# Network
+./update.sh trungnq72-network ../starters/network.yml ../starters/network-params.json
+./update.sh trungnq72-services ../starters/udagram.yml ../starters/udagram-params.json
 
 # Delete Stack
-./delete.sh trungnq72
+# Network
+./delete.sh trungnq72-network
+./delete.sh trungnq72-params

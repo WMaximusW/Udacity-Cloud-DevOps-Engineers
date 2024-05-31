@@ -1,6 +1,8 @@
 # Udacity-Cloud-DevOps-Engineers
 For projects
 
+# URL: http://trungn-webap-ohssrikk9skk-913596100.us-east-1.elb.amazonaws.com/
+
 # Note
 - In projects folder, i'm using the code from project 01
 - I do not copy the folder 'fontawesome' because of many files in that folder, it will slows the progress

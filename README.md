@@ -31,3 +31,4 @@ For projects
 1. The S3 i'm trying to add to EC2, can you review the code. Is that the best pratice? Can it be improved?
 2. EnvironmentName in S3 is lower-case only. So what is the name format for everything?
 3. For deleting S3, is the lambdra function work for emptying bucket?
+4. I dont know how to use the bastion, i will work on that. Is the others way for logging through mail or txt file?

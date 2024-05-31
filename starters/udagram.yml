@@ -161,3 +161,12 @@ Resources:
           Values: [/]
       ListenerArn: !Ref "Listener"
       Priority: 1
+
+Outputs:
+  # LoadBalancerDNSName
+  # Ref: WebAppLoadBalancer
+  LoadBalancerDNSName:
+    Description: Return DNS name
+    Value: !Join [ "", [ 'http://', !GetAtt WebAppLoadBalancer.DNSName ]]
+    Export:
+        Name: !Sub ${EnvironmentName}-LoadBalancer-DNS-Name

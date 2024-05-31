@@ -13,7 +13,8 @@ if [ "$STACK_STATUS" == "CREATE_COMPLETE" ]; then
     echo "Stack creation was successful!"
 else
     echo "Stack creation failed with status: $STACK_STATUS"
+
+    echo "Press any key to continue..."
+    read -n 1 -s
 fi
 
-echo "Press any key to continue..."
-read -n 1 -s

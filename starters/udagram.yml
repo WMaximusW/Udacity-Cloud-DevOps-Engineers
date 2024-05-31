@@ -61,8 +61,15 @@ Resources:
           Fn::Base64: !Sub |
             #!/bin/bash
             sudo apt-get update -y
-            sudo apt-get install nginx -y
-            aws s3 cp s3://trungnq72-project02-bucket-s3/index.html /var/www/html/index.html
+            sudo apt-get install -y nginx awscli jq
+
+            # Generate a URL for the image
+            IMAGE_URL=$(aws s3 presign s3://trungnq72-project02-bucket-s3/img/summer-2880261_1920.jpg --expires-in 3600)
+
+            # Create the index.html file
+            echo "<html><body><h1>It works! Udagram, Udacity</h1><img src=\"$IMAGE_URL\" alt=\"summer\"></body></html>" | sudo tee /var/www/html/index.html
+
+            # Start Nginx
             sudo service nginx start
         ImageId: ami-0e001c9271cf7f3b9
         SecurityGroupIds:

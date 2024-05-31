@@ -1,0 +1,53 @@
+maximus@Maximuss-MacBook-Pro tools % ./run.sh deploy trungnq72
+#1. Deploy network
+{
+    "StackId": "arn:aws:cloudformation:us-east-1:834458968267:stack/trungnq72-network/1bdbb070-1f28-11ef-82d4-124e6e4315ab"
+}
+Stack creation was successful!
+#2. Create S3
+{
+    "StackId": "arn:aws:cloudformation:us-east-1:834458968267:stack/trungnq72-store/83fa3320-1f28-11ef-b683-12d1ccf02ccb"
+}
+Stack creation was successful!
+#3. Upload project from folder projects
+upload: ../projects/.DS_Store to s3://trungnq72-project02-bucket-s3/.DS_Store
+upload: ../projects/index.html to s3://trungnq72-project02-bucket-s3/index.html
+upload: ../projects/css/clean-blog.min.css to s3://trungnq72-project02-bucket-s3/css/clean-blog.min.css
+upload: ../projects/vendor/bootstrap/.DS_Store to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/.DS_Store
+upload: ../projects/vendor/bootstrap/css/bootstrap-reboot.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-reboot.css
+upload: ../projects/img/.DS_Store to s3://trungnq72-project02-bucket-s3/img/.DS_Store
+upload: ../projects/css/clean-blog.css to s3://trungnq72-project02-bucket-s3/css/clean-blog.css
+upload: ../projects/vendor/bootstrap/css/bootstrap-grid.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-grid.css
+upload: ../projects/vendor/bootstrap/css/bootstrap-reboot.min.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-reboot.min.css
+upload: ../projects/vendor/bootstrap/css/bootstrap-grid.min.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-grid.min.css
+upload: ../projects/vendor/bootstrap/css/bootstrap-reboot.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-reboot.css.map
+upload: ../projects/vendor/bootstrap/css/bootstrap-reboot.min.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-reboot.min.css.map
+upload: ../projects/vendor/bootstrap/css/bootstrap-grid.min.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-grid.min.css.map
+upload: ../projects/vendor/bootstrap/css/bootstrap-grid.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap-grid.css.map
+upload: ../projects/vendor/bootstrap/js/bootstrap.bundle.min.js to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.bundle.min.js
+upload: ../projects/vendor/bootstrap/css/bootstrap.min.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap.min.css
+upload: ../projects/img/van-336606_1280.jpg to s3://trungnq72-project02-bucket-s3/img/van-336606_1280.jpg
+upload: ../projects/vendor/bootstrap/css/bootstrap.css to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap.css
+upload: ../projects/vendor/bootstrap/css/bootstrap.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap.css.map
+upload: ../projects/vendor/bootstrap/js/bootstrap.bundle.js to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.bundle.js
+upload: ../projects/vendor/bootstrap/js/bootstrap.min.js to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.min.js
+upload: ../projects/vendor/bootstrap/js/bootstrap.js to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.js
+upload: ../projects/vendor/bootstrap/js/bootstrap.bundle.min.js.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.bundle.min.js.map
+upload: ../projects/vendor/jquery/jquery.min.js to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.min.js
+upload: ../projects/img/summer-2880261_1920.jpg to s3://trungnq72-project02-bucket-s3/img/summer-2880261_1920.jpg
+upload: ../projects/vendor/bootstrap/js/bootstrap.js.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.js.map
+upload: ../projects/vendor/jquery/jquery.min.map to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.min.map
+upload: ../projects/vendor/bootstrap/js/bootstrap.min.js.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.min.js.map
+upload: ../projects/vendor/bootstrap/js/bootstrap.bundle.js.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/js/bootstrap.bundle.js.map
+upload: ../projects/vendor/bootstrap/css/bootstrap.min.css.map to s3://trungnq72-project02-bucket-s3/vendor/bootstrap/css/bootstrap.min.css.map
+upload: ../projects/vendor/jquery/jquery.slim.min.js to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.slim.min.js
+upload: ../projects/vendor/jquery/jquery.slim.min.map to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.slim.min.map
+upload: ../projects/vendor/jquery/jquery.js to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.js
+upload: ../projects/vendor/jquery/jquery.slim.js to s3://trungnq72-project02-bucket-s3/vendor/jquery/jquery.slim.js
+#4. Deploy services
+{
+    "StackId": "arn:aws:cloudformation:us-east-1:834458968267:stack/trungnq72-service/fb77a590-1f28-11ef-ab9a-0e16c4055893"
+}
+Stack creation was successful!
+Press any key to continue...
+maximus@Maximuss-MacBook-Pro tools %                            

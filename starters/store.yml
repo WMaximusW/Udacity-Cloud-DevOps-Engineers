@@ -14,13 +14,7 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${EnvironmentName}-bucket-s3"
-      AccessControl: Private
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        IgnorePublicAcls: true
-        BlockPublicPolicy: true
-        RestrictPublicBuckets: true
-
+      
   # WebAppInstanceRole: #3.1
   # IAM for accessing the bucket S3 from EC2
   # Policies: s3:GetObject, s3:ListBucket
